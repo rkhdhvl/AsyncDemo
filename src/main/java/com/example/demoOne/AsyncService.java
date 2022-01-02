@@ -14,10 +14,10 @@ public class AsyncService {
 	private RestTemplate restTemplate;
 
 	@Async
-	public CompletableFuture<String> callMsgService() {
-		final String msgServiceUrl = "http://localhost:8081/msg";
+	public CompletableFuture<Object> callMsgService() {
+		final String msgServiceUrl = "https://dummy.restapiexample.com/api/v1/employee/1";
 
-		final String response = restTemplate.getForObject(msgServiceUrl, String.class);
+		final Object response = restTemplate.getForObject(msgServiceUrl, Object.class);
 
 		return CompletableFuture.completedFuture(response);
 	}

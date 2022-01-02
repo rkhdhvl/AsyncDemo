@@ -1,5 +1,6 @@
 package com.example.demoOne;
 
+import com.example.demoOne.error_handling.ResponseEntityErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -37,16 +38,26 @@ public class RunLocalService {
     public void runApp() throws Exception {
         Instant start = Instant.now();
 
-        List<CompletableFuture<String>> allFutures = new ArrayList<>();
+        List<CompletableFuture<Object>> allFutures = new ArrayList<>();
 
-        for (int i = 0; i < 1000; i++) {
-            allFutures.add(asyncService.callMsgService());
+        for (int i = 0; i < 10; i++) {
+            int finalI = i;
+            allFutures.add(asyncService.callMsgService()
+                    .exceptionally(throwable -> {
+                        if(throwable.getCause() instanceof ResponseEntityErrorException)
+                        {
+                            ResponseEntityErrorException errorException = (ResponseEntityErrorException) throwable.getCause();
+                            System.out.println(finalI + " " + errorException.getErrorResponse().getStatusCode());
+                        }
+                        return "Error";
+                    })
+                    );
         }
 
         CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[0])).join();
 
-        for (int i = 0; i < 1000; i++) {
-            System.out.println("response: " + allFutures.get(i).get().toString());
+        for (CompletableFuture<Object> allFuture : allFutures) {
+            System.out.println("response: " + allFuture.get().toString());
         }
 
         Instant finish = Instant.now();
