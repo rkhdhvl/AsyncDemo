@@ -40,9 +40,12 @@ public class RunLocalService {
 
         List<CompletableFuture<Object>> allFutures = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             int finalI = i;
             allFutures.add(asyncService.callMsgService()
+                    .whenComplete((object,action)->{
+                        System.out.println(object.toString());
+                    })
                     .exceptionally(throwable -> {
                         if(throwable.getCause() instanceof ResponseEntityErrorException)
                         {
@@ -54,7 +57,7 @@ public class RunLocalService {
                     );
         }
 
-        CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[0])).join();
+       CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[0])).join();
 
         for (CompletableFuture<Object> allFuture : allFutures) {
             System.out.println("response: " + allFuture.get().toString());
